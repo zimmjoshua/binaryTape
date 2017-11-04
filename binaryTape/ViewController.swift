@@ -11,8 +11,11 @@ import SceneKit
 import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
-
+    
     @IBOutlet var sceneView: ARSCNView!
+    
+    var dotNodes = [SCNNode]()
+    var textNode = SCNNode()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,14 +23,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
-        // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
-        // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        
-        // Set the scene to the view
-        sceneView.scene = scene
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -35,7 +32,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
-
+        
         // Run the view's session
         sceneView.session.run(configuration)
     }
@@ -47,34 +44,92 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        if dotNodes.count >= 2 {
+            for dot in dotNodes {
+                dot.removeFromParentNode()
+            }
+            dotNodes = [SCNNode]()
+        }
+        
+        if let touchLocation = touches.first?.location(in: sceneView) {
+            let hitTestResults = sceneView.hitTest(touchLocation, types: .featurePoint)
+            
+            if let hitResult = hitTestResults.first {
+                addDot(at: hitResult)
+            }
+            
+        }
     }
-
-    // MARK: - ARSCNViewDelegate
     
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
+    func addDot(at hitResult : ARHitTestResult) {
+        let dotGeometry = SCNSphere(radius: 0.005)
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor.green
+        
+        dotGeometry.materials = [material]
+        
+        let dotNode = SCNNode(geometry: dotGeometry)
+        
+        dotNode.position = SCNVector3(hitResult.worldTransform.columns.3.x, hitResult.worldTransform.columns.3.y, hitResult.worldTransform.columns.3.z)
+        
+        sceneView.scene.rootNode.addChildNode(dotNode)
+        
+        dotNodes.append(dotNode)
+        
+        if dotNodes.count >= 2 {
+            calculate()
+        }
     }
-*/
     
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
+    func calculate (){
+        let start = dotNodes[0]
+        let end = dotNodes[1]
+        
+        print(start.position)
+        print(end.position)
+        
+        // Calculates distance in centimeters
+        let distance = (sqrt(
+            pow(end.position.x - start.position.x, 2) +
+                pow(end.position.y - start.position.y, 2) +
+                pow(end.position.z - start.position.z, 2)
+        )) * 100
+        
+        // Converts centimeter value to an absolute integer value
+        let myIntDistance = abs(Int(distance))
+        
+        // Converts the Aboslute Integer value of distance to a String, base 2 binary representation
+        let myDistaneInBinary = String(myIntDistance, radix: 2)
+        
+        
+        
+        updateText(text: "\(myDistaneInBinary)", atPosition: end.position)
+        
+        //        distance = √ ((x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2)
         
     }
     
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
+    func updateText(text: String, atPosition position: SCNVector3){
+        
+        textNode.removeFromParentNode()
+        
+        let textGeometry = SCNText(string: text, extrusionDepth: 1.0)
+        
+        textGeometry.firstMaterial?.diffuse.contents = UIColor.green
+        
+        textNode = SCNNode(geometry: textGeometry)
+        
+        textNode.position = SCNVector3(position.x, position.y + 0.01, position.z)
+        
+        textNode.scale = SCNVector3(0.01, 0.01, 0.01)
+        
+        sceneView.scene.rootNode.addChildNode(textNode)
         
     }
     
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
-    }
+    
 }
+
+
