@@ -2,8 +2,8 @@
 //  ViewController.swift
 //  binaryTape
 //
-//  Created by Joshua Zimmerman on 11/4/17.
-//  Copyright © 2017 Joshua Zimmerman. All rights reserved.
+//  Created by Joshua Zimmerman, Hopper Kremer, Jimmy Shah, Julian Van Court-Wels on 11/4/17.
+//  Copyright © 2017 Joshua Zimmerman, Hopper Kremer, Jimmy Shah, Julian Van Court-Wels. All rights reserved.
 //
 
 import UIKit
@@ -46,12 +46,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     
- 
-    
-  
-    
+    // Function to take user touch
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
+        // If more than three dot touch locations exist, remove dot locations
         if dotNodes.count >= 3 {
             for dot in dotNodes {
                 dot.removeFromParentNode()
@@ -69,6 +67,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    // Creates the dot material color and size
     func addDot(at hitResult : ARHitTestResult) {
         let dotGeometry = SCNSphere(radius: 0.002)
         let material = SCNMaterial()
@@ -84,21 +83,23 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         dotNodes.append(dotNode)
         
+        // When three touch locations exist, call function to calculate distances between dots
         if dotNodes.count >= 3 {
             calculate()
         }
     }
     
+    // Calculates the distance of each dotNode from the previous dotNode
     func calculate (){
         let start = dotNodes[0]
         let middle = dotNodes[1]
         let end = dotNodes[2]
         
-        print(start.position)
-        print(middle.position)
-        print(end.position)
+//        print(start.position)
+//        print(middle.position)
+//        print(end.position)
         
-        // Calculates distance in centimeters
+        // Calculates the distances in millimeters
         let a = (sqrt(
             pow(middle.position.x - start.position.x, 2) +
                 pow(middle.position.y - start.position.y, 2) +
@@ -112,10 +113,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         )) * 1000
         let c = sqrt((pow(a, 2) + pow(b, 2)))
         
-        // Converts centimeter value to an absolute integer value
+        // Converts millimeter value to an absolute integer value
+        // Converts the Aboslute Integer value of distance to a String, base 2 binary representation
+
         let intA = abs(Int(a))
         
-        // Converts the Aboslute Integer value of distance to a String, base 2 binary representation
         let binaryA = String(intA, radix: 2)
         
         let intB = abs(Int(b))
@@ -126,61 +128,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         let binaryC = String(intC, radix: 2)
         
-        /*
- 
-         let intdistance1 = abs(Int(distance1))
-         
-         // Converts the Aboslute Integer value of distance to a String, base 2 binary representation
-         let Distance1InBinary = String(intdistance1, radix: 2)
-         
-         let intdistance2 = abs(Int(distance2))
-         
-         let Distance2InBinary = String(intdistance2, radix: 2)
-         
-         let inthyp = abs(Int(hyp))
-         
-         let binaryHyp = String(inthyp, radix: 2)
- */
-        
-//        func vSubtract(left:SCNVector3, right:SCNVector3) -> SCNVector3 {
-//
-//            return left + (right  -1.0)
-//        }
-//
-//        func vMultiply(vector:SCNVector3, multiplier:SCNFloat) -> SCNVector3 {
-//
-//            return SCNVector3(vector.x * multiplier, vector.y * multiplier, vector.z * multiplier)
-//        }
-        
-      //  var newVector = vSubtract(middle.position, start.position)
-        //var coeff SCNFloat = 0.5
-       // vMultiply(newVector, 0.5)
-        
-        
-
-        
-
-        
-        
-        //SCNVector3 kjhkjh = new SCNVector3()
-        
-        //updateText(text: "\(myDistanceInBinary)", atPosition: end.position)
-        
-        /*updateTextA(text: "a = \(distance1)", atPosition: start.position)
-        updateTextB(text: "b = \(distance2)", atPosition: middle.position)
-        updateTextC(text: "c = \(hyp)\n ", atPosition: end.position)
- */
+        // Calls function to Update the text in 3D space with both the decimal and binary measure
         updateTextA(text: ("a = \(a)mm\n" + binaryA), atPosition: start.position)
-        
         updateTextB(text: ("b = \(b)mm\n" + binaryB), atPosition: middle.position)
         updateTextC(text: ("c = \(c)mm\n" + binaryC), atPosition: end.position)
-        //        distance = √ ((x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2)
+        
        
         
         
         
     }
     
+    // Updates the text in 3D space with both the decimal and binary measure
     func updateTextA(text: String, atPosition position: SCNVector3){
         
         textNodeA.removeFromParentNode()
@@ -199,6 +158,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+       // Updates the text in 3D space with both the decimal and binary measure
     func updateTextB(text: String, atPosition position: SCNVector3){
         
         textNodeB.removeFromParentNode()
@@ -217,6 +177,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+       // Updates the text in 3D space with both the decimal and binary measure
     func updateTextC(text: String, atPosition position: SCNVector3){
         
         textNodeC.removeFromParentNode()
@@ -236,9 +197,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
 
-    
-    
-    
 }
 
 
